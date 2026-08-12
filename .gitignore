@@ -1,0 +1,16 @@
+# Assignment rule: never publish the supplied dataset
+data/
+messages.csv
+mandatory_demo_ids.csv
+
+# Generated output (contains masked-but-still-derived content; regenerate locally instead)
+output/
+output_custom/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.DS_Store
