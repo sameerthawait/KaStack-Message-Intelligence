@@ -588,11 +588,19 @@ def dashboard():
   .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; font-size: 12px; font-weight: 700; color: var(--text-muted); background: rgba(248, 250, 252, 0.8); }
   .page-btns { display: flex; gap: 8px; }
 
-  /* Progress bar overview */
-  .cat-progress { margin-bottom: 16px; }
-  .cat-progress-head { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-  .cat-progress-bar { height: 12px; background: #e2e8f0; border-radius: var(--radius-pill); overflow: hidden; }
-  .cat-progress-fill { height: 100%; border-radius: var(--radius-pill); }
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    body { padding: 12px 10px 40px; }
+    header { flex-direction: column; align-items: stretch; gap: 14px; padding: 16px 20px; }
+    .header-actions { flex-direction: column; width: 100%; }
+    .header-actions .btn { width: 100%; justify-content: center; }
+    .nav-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab-btn { flex: 0 0 auto; white-space: nowrap; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .control-bar { flex-direction: column; align-items: stretch; }
+    .search-box { width: 100%; }
+    .select-box { width: 100%; }
+  }
 </style>
 </head>
 <body>
