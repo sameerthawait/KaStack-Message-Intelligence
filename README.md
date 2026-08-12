@@ -98,18 +98,9 @@ pip install -r requirements.txt
 python run_pipeline.py data/messages.csv output/
 
 # 3. Run automated tests
-pytest tests/ -v
+python -m pytest tests/ -v
 
 # 4. Launch the Glassmorphism Web App locally
 uvicorn api.main:app --reload
 # Open http://localhost:8000 in your browser
 ```
-
----
-
-## ☁️ Cloud Deployment (Render.com)
-
-This repository includes a `render.yaml` blueprint. To deploy live to Render:
-1. Connect your GitHub repository `sameerthawait/KaStack-Message-Intelligence` to **[Render.com](https://render.com)**.
-2. Select **Web Service** — Render will automatically build using `requirements.txt` and launch with `uvicorn api.main:app`.
-
