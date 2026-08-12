@@ -446,6 +446,17 @@ def dashboard():
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
   }
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #2563eb;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
+  }
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+  }
 
   .container { max-width: 1320px; margin: 0 auto; }
 
@@ -596,6 +607,7 @@ def dashboard():
   </div>
   <div class="header-actions">
     <div class="status-badge"><span class="pulse-dot"></span> Pipeline Active</div>
+    <button class="btn btn-secondary" onclick="triggerPipeline()">🔄 Run Pipeline</button>
     <label class="btn btn-primary" style="margin:0; cursor:pointer;">
       📁 Upload Custom CSV
       <input type="file" id="csv-upload-input" accept=".csv" style="display:none;" onchange="uploadCSV(event)" />
