@@ -75,9 +75,23 @@ FALLBACK_BENCHMARK_MESSAGES = {
 
 
 def _ensure_output_data() -> dict:
-    """Ensure output JSON files exist on disk; run pipeline if missing."""
+    """Ensure output JSON files exist on disk and contain valid data; run pipeline if missing."""
     summary_file = OUTPUT_DIR / "summary.json"
-    if not summary_file.exists() or not (OUTPUT_DIR / "classifications.json").exists():
+    class_file = OUTPUT_DIR / "classifications.json"
+
+    needs_generation = False
+    if not summary_file.exists() or not class_file.exists():
+        needs_generation = True
+    else:
+        try:
+            with summary_file.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+                if not data or data.get("total_messages", 0) == 0:
+                    needs_generation = True
+        except Exception:
+            needs_generation = True
+
+    if needs_generation:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         if DATA_CSV.exists():
             return run_pipeline(DATA_CSV, OUTPUT_DIR)
@@ -91,6 +105,7 @@ def _ensure_output_data() -> dict:
             summary = run_pipeline(temp_csv, OUTPUT_DIR)
             temp_csv.unlink(missing_ok=True)
             return summary
+
     with summary_file.open("r", encoding="utf-8") as f:
         return json.load(f)
 
