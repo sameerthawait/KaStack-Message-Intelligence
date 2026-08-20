@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KaStack Message Intelligence Platform</title>
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand-wrapper">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-info">
+      <h1>KaStack Message Intelligence Platform</h1>
+      <p>Priority Engine · Related-Message Grouping · Privacy Router · Local AI Assistant</p>
+    </div>
+  </div>
+  <div class="header-controls">
+    <div class="status-indicator">
+      <span class="pulse-dot"></span> Pipeline Active (100% Local)
+    </div>
+    <label class="btn btn-primary">
+      📁 Upload Custom CSV
+      <input type="file" id="csv-upload-input" accept=".csv" style="display: none;" onchange="uploadCSV(this)" />
+    </label>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- KPI Overview Grid -->
+  <div class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-label">Total Messages Processed</div>
+      <div class="kpi-value" id="kpi-total">900</div>
+      <div class="kpi-sub">Defensively sorted chronologically</div>
+    </div>
+    <div class="kpi-card rose">
+      <div class="kpi-label">Critical & High Priority</div>
+      <div class="kpi-value" id="kpi-priority">230</div>
+      <div class="kpi-sub" id="kpi-priority-sub">45 Critical · 185 High</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Related Message Groups</div>
+      <div class="kpi-value" id="kpi-groups">42</div>
+      <div class="kpi-sub">Topic Thread & Lifecycle Tracking</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Sensitive & Privacy Blocked</div>
+      <div class="kpi-value" id="kpi-sensitive">100</div>
+      <div class="kpi-sub">100% Redacted & Protected</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Local Search Latency</div>
+      <div class="kpi-value" id="kpi-speedup">0.8ms</div>
+      <div class="kpi-sub">>15x Faster · Zero Cloud API</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs-wrapper">
+    <button class="tab-btn active" onclick="switchTab('overview', this)">📊 Overview & Analytics</button>
+    <button class="tab-btn" onclick="switchTab('assistant', this)">🤖 AI Assistant & Search</button>
+    <button class="tab-btn" onclick="switchTab('priority', this)">🎯 Priority Engine</button>
+    <button class="tab-btn" onclick="switchTab('groups', this)">🔗 Related Groups</button>
+    <button class="tab-btn" onclick="switchTab('privacy', this)">🛡️ Privacy Router</button>
+    <button class="tab-btn" onclick="switchTab('benchmark-set', this)">📌 Benchmark Test Set</button>
+    <button class="tab-btn" onclick="switchTab('classifications', this)">🏷️ Classifications</button>
+    <button class="tab-btn" onclick="switchTab('tasks-events', this)">📅 Tasks & Events</button>
+    <button class="tab-btn" onclick="switchTab('sensitive', this)">🔒 Sensitive Data</button>
+  </div>
+
+  <!-- TAB 1: OVERVIEW -->
+  <div id="tab-overview" class="tab-content active">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
+      <div class="glass-box">
+        <h3 style="font-size: 16px; font-weight: 800;">Category Distribution Breakdown</h3>
+        <div id="category-distribution-container" style="margin-top: 16px;"></div>
+      </div>
+      <div class="glass-box">
+        <h3 style="font-size: 16px; font-weight: 800;">Platform Architecture Highlights</h3>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 14px; font-size: 13px;">
+          <div>🎯 <b>Priority & Action Engine:</b> Evaluates deadline proximity, urgency signals, sender authority, and status modifications.</div>
+          <div>🔗 <b>Related-Message Grouping:</b> Connects multi-message threads across tasks/events, tracking lifecycle (Completed, Rescheduled, Cancelled, Unclear).</div>
+          <div>🛡️ <b>Privacy-Aware Routing:</b> Zero-leakage policy routing queries into Blocked, Confirm, or Local execution.</div>
+          <div>🤖 <b>Local Semantic Assistant:</b> In-memory TF-IDF + entity search answering natural language queries with strict evidence grounding.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: AI ASSISTANT & SEMANTIC SEARCH -->
+  <div id="tab-assistant" class="tab-content">
+    <div class="assistant-wrapper">
+      <div class="glass-box">
+        <h3 style="font-size: 16px; font-weight: 800;">🤖 Intelligent Assistant & Natural Language Q&A</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Ask questions about tasks, meetings, deadlines, priority reasons, or privacy policies. Or click any mandatory L2 demo query below:</p>
+        
+        <div class="query-chips">
+          <div class="query-chip" onclick="askPreset('Which existing task became critical in the demo data?')">DQ01: Critical Task in Demo</div>
+          <div class="query-chip" onclick="askPreset('Which tasks or meetings were completed or cancelled?')">DQ02: Completed / Cancelled Items</div>
+          <div class="query-chip" onclick="askPreset('Which meeting was rescheduled and what is its latest schedule?')">DQ03: Rescheduled Meeting Time</div>
+          <div class="query-chip" onclick="askPreset('Which messages contain conflicting or uncertain deadlines?')">DQ04: Conflicting Deadlines</div>
+          <div class="query-chip" onclick="askPreset('Which demo messages must be blocked from external processing?')">DQ05: Blocked Credentials (OTP/Token)</div>
+          <div class="query-chip" onclick="askPreset('Which message requires confirmation before processing?')">DQ06: Required User Confirmation</div>
+          <div class="query-chip" onclick="askPreset('What is the latest status of the task referenced by DEMO_016?')">DQ07: Status of DEMO_016 Task</div>
+          <div class="query-chip" onclick="askPreset('Was the compliance form approved by the finance director?')">DQ08: Compliance Form Approval</div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <div class="search-input-wrapper" style="flex:1;">
+            <input type="text" id="assistant-input" placeholder="Type any question (e.g. What meetings were rescheduled?)" onkeydown="if(event.key==='Enter') runAssistantQuery()" />
+          </div>
+          <button class="btn btn-accent" onclick="runAssistantQuery()">⚡ Ask Assistant</button>
+        </div>
+      </div>
+
+      <div class="glass-box" id="assistant-response-container">
+        <div style="text-align: center; color: var(--text-muted); padding: 24px;">Click any Demo Query above or type a question to inspect the assistant's answer and evidence.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: PRIORITY ENGINE -->
+  <div id="tab-priority" class="tab-content">
+    <div class="control-bar">
+      <div class="search-input-wrapper">🔍 <input type="text" id="priority-search" placeholder="Search message ID, item ID, or priority reason..." oninput="loadPriority(0)" /></div>
+      <select class="select-filter" id="priority-filter" onchange="loadPriority(0)">
+        <option value="all">All Priorities</option>
+        <option value="critical">Critical Only</option>
+        <option value="high">High Only</option>
+        <option value="medium">Medium Only</option>
+        <option value="low">Low Only</option>
+      </select>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Message ID</th>
+            <th>Item ID</th>
+            <th>Priority</th>
+            <th>Signals Detected</th>
+            <th>Confidence</th>
+            <th>Explainable Reason</th>
+          </tr>
+        </thead>
+        <tbody id="priority-table-body">
+          <tr><td colspan="6" style="text-align:center; padding:24px;">Loading priority decisions...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 4: RELATED GROUPS -->
+  <div id="tab-groups" class="tab-content">
+    <div class="control-bar">
+      <div class="search-input-wrapper">🔍 <input type="text" id="groups-search" placeholder="Search topic title or summary..." oninput="loadGroups(0)" /></div>
+      <select class="select-filter" id="groups-filter" onchange="loadGroups(0)">
+        <option value="all">All Statuses</option>
+        <option value="completed">Completed</option>
+        <option value="rescheduled">Rescheduled</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="in_progress">In Progress</option>
+        <option value="pending">Pending</option>
+        <option value="unclear">Unclear / Conflicting</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="groups-cards-container">
+      <div style="grid-column: 1/-1; text-align:center; padding:32px;">Loading related-message groups...</div>
+    </div>
+  </div>
+
+  <!-- TAB 5: PRIVACY ROUTER -->
+  <div id="tab-privacy" class="tab-content">
+    <div class="control-bar">
+      <div class="search-input-wrapper">🔍 <input type="text" id="privacy-search" placeholder="Search target ID, sensitivity type, or reason..." oninput="loadPrivacy(0)" /></div>
+      <select class="select-filter" id="privacy-filter" onchange="loadPrivacy(0)">
+        <option value="all">All Routing Policies</option>
+        <option value="blocked">🚫 Blocked Only</option>
+        <option value="confirm">⚠️ Confirm Only</option>
+        <option value="local">🟢 Local Only</option>
+      </select>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Target ID</th>
+            <th>Routing Policy</th>
+            <th>Sensitivity Type</th>
+            <th>User Action Required</th>
+            <th>Policy Justification</th>
+          </tr>
+        </thead>
+        <tbody id="privacy-table-body">
+          <tr><td colspan="5" style="text-align:center; padding:24px;">Loading privacy routes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 6: BENCHMARK TEST SET -->
+  <div id="tab-benchmark-set" class="tab-content">
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Message ID</th>
+            <th>Raw Message & Sender</th>
+            <th>Classification</th>
+            <th>Task / Event</th>
+            <th>Sensitive Flag</th>
+          </tr>
+        </thead>
+        <tbody id="mandatory-table-body">
+          <tr><td colspan="5" style="text-align:center; padding: 24px;">Loading benchmark test cases...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 7: CLASSIFICATIONS -->
+  <div id="tab-classifications" class="tab-content">
+    <div class="control-bar">
+      <div class="search-input-wrapper">🔍 <input type="text" id="class-search" placeholder="Search message ID, category, or rule reason..." oninput="loadClassifications(0)" /></div>
+      <select class="select-filter" id="class-cat-filter" onchange="loadClassifications(0)">
+        <option value="all">All Categories</option>
+        <option value="action_required">Action Required</option>
+        <option value="meeting_or_event">Meeting or Event</option>
+        <option value="general_information">General Information</option>
+        <option value="sensitive_information">Sensitive Information</option>
+        <option value="personal_information">Personal Information</option>
+        <option value="promotional">Promotional</option>
+      </select>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Message ID</th>
+            <th>Category</th>
+            <th>Confidence</th>
+            <th>Matched Rule</th>
+            <th>Reason / Explanation</th>
+          </tr>
+        </thead>
+        <tbody id="class-table-body">
+          <tr><td colspan="5" style="text-align:center; padding: 24px;">Loading classifications...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 8: TASKS & EVENTS -->
+  <div id="tab-tasks-events" class="tab-content">
+    <div class="control-bar">
+      <div class="search-input-wrapper">🔍 <input type="text" id="task-search" placeholder="Search task title or person..." oninput="loadTasksEvents(0)" /></div>
+      <select class="select-filter" id="task-type-filter" onchange="loadTasksEvents(0)">
+        <option value="all">All Items (Tasks & Events)</option>
+        <option value="task">Tasks Only</option>
+        <option value="event">Events Only</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="tasks-cards-container">
+      <div style="grid-column: 1/-1; text-align:center; padding: 32px;">Loading tasks & events...</div>
+    </div>
+  </div>
+
+  <!-- TAB 9: SENSITIVE DATA -->
+  <div id="tab-sensitive" class="tab-content">
+    <div class="control-bar">
+      <div class="search-input-wrapper">🔍 <input type="text" id="sensitive-search" placeholder="Search sensitive finding..." oninput="loadSensitive(0)" /></div>
+      <select class="select-filter" id="sensitive-risk-filter" onchange="loadSensitive(0)">
+        <option value="all">All Risk Levels</option>
+        <option value="high">High Risk</option>
+        <option value="medium">Medium Risk</option>
+        <option value="low">Low Risk</option>
+      </select>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Message ID</th>
+            <th>Sensitivity Type</th>
+            <th>Risk Level</th>
+            <th>Masked Text Preview</th>
+            <th>Recommended Action</th>
+          </tr>
+        </thead>
+        <tbody id="sensitive-table-body">
+          <tr><td colspan="5" style="text-align:center; padding: 24px;">Loading sensitive findings...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- JavaScript Controller -->
+<script src="/static/app.js"></script>
+</body>
+</html>

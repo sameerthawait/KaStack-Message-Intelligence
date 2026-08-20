@@ -79,3 +79,87 @@ class SensitiveFinding:
             "recommended_action": self.recommended_action,
             "reason": self.reason,
         }
+
+
+@dataclass
+class PriorityDecision:
+    message_id: str
+    item_id: Optional[str]
+    priority: str  # "critical" | "high" | "medium" | "low"
+    reason: str
+    signals: list[str]
+    confidence: float
+
+    def to_dict(self) -> dict:
+        return {
+            "message_id": self.message_id,
+            "item_id": self.item_id,
+            "priority": self.priority,
+            "reason": self.reason,
+            "signals": self.signals,
+            "confidence": round(self.confidence, 2),
+        }
+
+
+@dataclass
+class RelatedGroup:
+    group_id: str
+    title: str
+    related_message_ids: list[str]
+    related_task_or_event_ids: list[str]
+    status: str  # "pending" | "in_progress" | "completed" | "rescheduled" | "cancelled" | "unclear"
+    latest_deadline: Optional[str]
+    summary: str
+    confidence: float
+
+    def to_dict(self) -> dict:
+        return {
+            "group_id": self.group_id,
+            "title": self.title,
+            "related_message_ids": self.related_message_ids,
+            "related_task_or_event_ids": self.related_task_or_event_ids,
+            "status": self.status,
+            "latest_deadline": self.latest_deadline,
+            "summary": self.summary,
+            "confidence": round(self.confidence, 2),
+        }
+
+
+@dataclass
+class PrivacyRoutingResult:
+    target_id: str  # message_id or query_id
+    route: str  # "local" | "confirm" | "blocked"
+    reason: str
+    requires_user_action: bool
+    sensitivity_type: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        return {
+            "target_id": self.target_id,
+            "route": self.route,
+            "reason": self.reason,
+            "requires_user_action": self.requires_user_action,
+            "sensitivity_type": self.sensitivity_type,
+        }
+
+
+@dataclass
+class AssistantAnswer:
+    query: str
+    answer: str
+    supporting_message_ids: list[str]
+    group_id: Optional[str]
+    item_id: Optional[str]
+    relevance_scores: list[float]
+    reason: str
+
+    def to_dict(self) -> dict:
+        return {
+            "query": self.query,
+            "answer": self.answer,
+            "supporting_message_ids": self.supporting_message_ids,
+            "group_id": self.group_id,
+            "item_id": self.item_id,
+            "relevance_scores": [round(s, 2) for s in self.relevance_scores],
+            "reason": self.reason,
+        }

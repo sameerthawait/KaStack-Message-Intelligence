@@ -1,7 +1,11 @@
 # Assignment rule: never publish the supplied dataset
 data/
+L2/
 messages.csv
 mandatory_demo_ids.csv
+l2_messages.csv
+l2_demo_messages.csv
+l2_demo_queries.csv
 
 # Generated output (contains masked-but-still-derived content; regenerate locally instead)
 output/

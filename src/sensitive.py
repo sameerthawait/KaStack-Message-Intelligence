@@ -50,7 +50,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "otp",
         "one_time_password",
-        r"\bOTP\s+is\s+([\d\-]{4,10})",
+        r"\b(?:OTP\s+is|fictional\s+OTP\s+is|new\s+OTP\s+is)\s+([\d\-]{4,10})",
         "high",
         "do_not_store",
         "Message contains a one-time password (OTP), which is only valid briefly "
@@ -59,7 +59,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "password",
         "password",
-        r"\bpassword\s+(\S+)\s+to\s+sign\s+in",
+        r"\b(?:password\s+(\S+)\s+to\s+sign\s+in|temporary\s+password\s+(\S+)\s+for|temporary\s+password\s+is\s+(\S+))",
         "high",
         "do_not_store",
         "Message contains a literal account password.",
@@ -67,7 +67,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "card_number",
         "payment_card_number",
-        r"\bcard number is ([\d\s\-]{12,25})",
+        r"\b(?:card\s+number\s+is|test\s+card\s+number\s+is)\s+([\d\s\-]{12,25})",
         "high",
         "do_not_store",
         "Message contains what appears to be a full payment card number.",
@@ -75,7 +75,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "bank_account",
         "bank_account_number",
-        r"\bbank account number ([\d\-]{8,20})",
+        r"\b(?:bank\s+account\s+number|sample\s+bank\s+account\s+is)\s+([\d\-]{8,20})",
         "high",
         "do_not_store",
         "Message contains a bank account number.",
@@ -83,7 +83,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "auth_token",
         "authentication_token",
-        r"\baccess token is (\S+)",
+        r"\b(?:access\s+token\s+is|access\s+token|integration\s+token:?)\s+([a-zA-Z0-9_\-]+)",
         "high",
         "do_not_store",
         "Message contains an authentication/access token that could be used to "
@@ -92,7 +92,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "recovery_code",
         "account_recovery_code",
-        r"\baccount recovery code is (\S+)",
+        r"\b(?:account\s+recovery\s+code\s+is|recovery\s+code)\s+([a-zA-Z0-9_\-]+)",
         "high",
         "do_not_store",
         "Message contains an account recovery code, which can be used to bypass "
@@ -101,7 +101,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "id_number",
         "government_or_org_id",
-        r"\bidentification number is (\S+)",
+        r"\b(?:identification\s+number\s+is|fictional\s+ID\s+number\s+is)\s+([a-zA-Z0-9_\-]+)",
         "medium",
         "ask_for_confirmation",
         "Message contains a personal identification number.",
@@ -109,7 +109,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "phone_number",
         "private_contact_number",
-        r"\bcontact me on ([\d\s\-]{8,15})",
+        r"\b(?:contact\s+me\s+on|call\s+me\s+on)\s+([\d\s\-]{8,15})",
         "medium",
         "ask_for_confirmation",
         "Message contains a private phone number.",
@@ -117,10 +117,10 @@ SENSITIVE_RULES: list[SensitiveRule] = [
     _rule(
         "home_address",
         "private_address",
-        r"\bhome address is (.+?)(?:\.\s*$|$)",
+        r"\b(?:home\s+address\s+is|deliver\s+(?:the\s+[^,.]+?|it)\s+to)\s+(.+?)(?:\.\s*$|$)",
         "medium",
         "ask_for_confirmation",
-        "Message contains a private home address.",
+        "Message contains a private address.",
     ),
 ]
 
@@ -130,7 +130,7 @@ SENSITIVE_RULES: list[SensitiveRule] = [
 _HEALTH_RULE = _rule(
     "health_note",
     "health_information",
-    r"\btest result says (.+?)(?:\.\s*$|$)",
+    r"\b(?:test\s+result\s+says|private\s+medical\s+note\s+mentions)\s+(.+?)(?:\.\s*$|$)",
     "low",
     "ask_for_confirmation",
     "Message contains a personal health detail. Not in the assignment's listed "
@@ -138,6 +138,7 @@ _HEALTH_RULE = _rule(
     "out of caution (see README limitations).",
 )
 SENSITIVE_RULES.append(_HEALTH_RULE)
+
 
 
 def _mask_message(message: str, match: re.Match, mask_group: int) -> str:
