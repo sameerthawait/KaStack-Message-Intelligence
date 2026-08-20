@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
 
 COPY src/ src/
 COPY api/ api/
+COPY static/ static/
 
 # Render/Railway/Fly.io inject PORT; default to 8000 for local docker run.
 ENV PORT=8000
