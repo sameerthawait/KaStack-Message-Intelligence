@@ -55,14 +55,42 @@ class MessageIn(BaseModel):
     message: str
 
 
+FALLBACK_BENCHMARK_MESSAGES = {
+    "MSG_0001": {"message_id": "MSG_0001", "timestamp": "2026-09-01 08:00:00", "sender": "Meera", "message": "For today: Calendar update: family dinner, 2026-09-19 at 10:00, the library."},
+    "MSG_0002": {"message_id": "MSG_0002", "timestamp": "2026-09-01 08:37:00", "sender": "Ishaan", "message": "Can you review the privacy checklist before 2026-09-09?"},
+    "MSG_0003": {"message_id": "MSG_0003", "timestamp": "2026-09-01 09:14:00", "sender": "Kabir", "message": "FYI: Reminder: mentor catch-up happens on 2026-09-16 at 11:00 in the city clinic."},
+    "MSG_0004": {"message_id": "MSG_0004", "timestamp": "2026-09-01 09:51:00", "sender": "Aarav", "message": "One more thing: The training material is on the portal."},
+    "MSG_0005": {"message_id": "MSG_0005", "timestamp": "2026-09-01 10:28:00", "sender": "Aarav", "message": "Hi, My home address is 42 Lake View Road, Chennai-45."},
+    "MSG_0006": {"message_id": "MSG_0006", "timestamp": "2026-09-01 11:05:00", "sender": "Meera", "message": "Important: The laptop battery is fully charged."},
+    "MSG_0007": {"message_id": "MSG_0007", "timestamp": "2026-09-01 11:42:00", "sender": "Ananya", "message": "For today: Please reply to the client email by 2026-09-04."},
+    "MSG_0009": {"message_id": "MSG_0009", "timestamp": "2026-09-01 12:56:00", "sender": "Meera", "message": "For my profile, my emergency contact is my brother."},
+    "MSG_0012": {"message_id": "MSG_0012", "timestamp": "2026-09-01 14:47:00", "sender": "Neha", "message": "FYI: I will send the login details separately."},
+    "MSG_0013": {"message_id": "MSG_0013", "timestamp": "2026-09-01 15:24:00", "sender": "Meera", "message": "One more thing: My card number is 4111 1111 1111 1111-92."},
+    "MSG_0014": {"message_id": "MSG_0014", "timestamp": "2026-09-01 16:01:00", "sender": "Promotions", "message": "Can you help? Special festival discount on clothing. Use code SAVE17."},
+    "MSG_0015": {"message_id": "MSG_0015", "timestamp": "2026-09-01 16:38:00", "sender": "Promotions", "message": "Please note: Flash sale on laptops starts at 6 PM. Use code SAVE23."},
+    "MSG_0016": {"message_id": "MSG_0016", "timestamp": "2026-09-01 17:15:00", "sender": "Rohan", "message": "Just checking—Remember that i drink coffee without sugar."},
+    "MSG_0024": {"message_id": "MSG_0024", "timestamp": "2026-09-01 22:11:00", "sender": "Ananya", "message": "Just checking—I might prefer evening meetings now."},
+    "MSG_0037": {"message_id": "MSG_0037", "timestamp": "2026-09-02 06:12:00", "sender": "Meera", "message": "One more thing: The review could be Friday afternoon."}
+}
+
+
 def _ensure_output_data() -> dict:
     """Ensure output JSON files exist on disk; run pipeline if missing."""
     summary_file = OUTPUT_DIR / "summary.json"
     if not summary_file.exists() or not (OUTPUT_DIR / "classifications.json").exists():
-        csv_path = DATA_CSV if DATA_CSV.exists() else Path("data/messages.csv")
-        if csv_path.exists():
-            return run_pipeline(csv_path, OUTPUT_DIR)
-        return {}
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        if DATA_CSV.exists():
+            return run_pipeline(DATA_CSV, OUTPUT_DIR)
+        else:
+            temp_csv = OUTPUT_DIR / "seed_messages.csv"
+            with temp_csv.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=["message_id", "timestamp", "sender", "message"])
+                writer.writeheader()
+                for row in FALLBACK_BENCHMARK_MESSAGES.values():
+                    writer.writerow(row)
+            summary = run_pipeline(temp_csv, OUTPUT_DIR)
+            temp_csv.unlink(missing_ok=True)
+            return summary
     with summary_file.open("r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -81,11 +109,7 @@ def _get_mandatory_ids() -> list[str]:
         with MANDATORY_CSV.open("r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             return [row["message_id"].strip() for row in reader if row.get("message_id")]
-    return [
-        "MSG_0001", "MSG_0002", "MSG_0003", "MSG_0004", "MSG_0005",
-        "MSG_0006", "MSG_0007", "MSG_0009", "MSG_0012", "MSG_0013",
-        "MSG_0014", "MSG_0015", "MSG_0016", "MSG_0024", "MSG_0037"
-    ]
+    return list(FALLBACK_BENCHMARK_MESSAGES.keys())
 
 
 @app.get("/api/health")
@@ -106,7 +130,6 @@ def get_mandatory_demo():
     tasks_events = {x["source_message_id"]: x for x in _load_json_file("tasks_events.json") if x.get("source_message_id") in mandatory_ids}
     sensitive_findings = {x["message_id"]: x for x in _load_json_file("sensitive_findings.json") if x.get("message_id") in mandatory_ids}
 
-    # Fetch raw message text from data/messages.csv if available
     raw_messages = {}
     if DATA_CSV.exists():
         with DATA_CSV.open("r", encoding="utf-8-sig") as f:
@@ -115,17 +138,20 @@ def get_mandatory_demo():
                 mid = row.get("message_id", "").strip()
                 if mid in mandatory_ids:
                     raw_messages[mid] = row
-                    # If current output/ was from a custom upload that didn't include MSG_0001..., classify on the fly
-                    if mid not in classifications:
-                        c = classify_message(mid, row.get("sender", ""), row.get("message", ""))
-                        classifications[mid] = c.to_dict()
-                        if c.category in EXTRACTABLE_CATEGORIES:
-                            te = extract_task_or_event(f"BENCH_{mid}", mid, row.get("message", ""))
-                            if te:
-                                tasks_events[mid] = te.to_dict()
-                        sf = detect_sensitive_info(mid, row.get("message", ""))
-                        if sf:
-                            sensitive_findings[mid] = sf.to_dict()
+    else:
+        raw_messages = {mid: dict(row) for mid, row in FALLBACK_BENCHMARK_MESSAGES.items() if mid in mandatory_ids}
+
+    for mid, row in raw_messages.items():
+        if mid not in classifications:
+            c = classify_message(mid, row.get("sender", ""), row.get("message", ""))
+            classifications[mid] = c.to_dict()
+            if c.category in EXTRACTABLE_CATEGORIES:
+                te = extract_task_or_event(f"BENCH_{mid}", mid, row.get("message", ""))
+                if te:
+                    tasks_events[mid] = te.to_dict()
+            sf = detect_sensitive_info(mid, row.get("message", ""))
+            if sf:
+                sensitive_findings[mid] = sf.to_dict()
 
     results = []
     for mid in sorted(list(mandatory_ids)):
@@ -946,7 +972,7 @@ def dashboard():
   }
 
   function renderDistribution(counts) {
-    const total = summaryData.total_messages || 1;
+    const total = Object.values(counts).reduce((a, b) => a + b, 0) || summaryData.total_messages || 1;
     const colors = {
       action_required: 'linear-gradient(90deg, #ef4444, #dc2626)',
       meeting_or_event: 'linear-gradient(90deg, #007fff, #3b82f6)',
