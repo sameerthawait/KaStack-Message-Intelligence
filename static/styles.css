@@ -6,7 +6,7 @@
 :root {
   /* Color Tokens */
   --bg-gradient: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 40%, #f5f3ff 100%);
-  --surface-glass: rgba(255, 255, 255, 0.82);
+  --surface-glass: rgba(255, 255, 255, 0.85);
   --surface-glass-hover: rgba(255, 255, 255, 0.95);
   --surface-card: #ffffff;
   --border-glass: 1px solid rgba(226, 232, 240, 0.85);
@@ -16,7 +16,6 @@
   --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
   --shadow-md: 0 8px 24px -4px rgba(37, 99, 235, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 16px 36px -6px rgba(37, 99, 235, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-  --shadow-glow-blue: 0 0 20px rgba(0, 127, 255, 0.25);
 
   /* Brand Accents */
   --accent-primary: #007fff;
@@ -64,9 +63,7 @@ body {
   margin: 0 auto;
 }
 
-/* ==========================================================================
-   Header Component
-   ========================================================================== */
+/* Header Component */
 .site-header {
   background: var(--surface-glass);
   backdrop-filter: blur(20px);
@@ -79,7 +76,6 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
-  transition: box-shadow 0.2s ease;
 }
 
 .brand-wrapper {
@@ -148,7 +144,6 @@ body {
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -185,9 +180,7 @@ body {
   box-shadow: 0 6px 20px rgba(0, 127, 255, 0.4);
 }
 
-/* ==========================================================================
-   KPI Analytics Grid
-   ========================================================================== */
+/* KPI Analytics Grid */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -250,9 +243,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* ==========================================================================
-   Navigation Tabs
-   ========================================================================== */
+/* Navigation Tabs */
 .nav-tabs-wrapper {
   background: var(--surface-glass);
   backdrop-filter: blur(16px);
@@ -293,7 +284,6 @@ body {
   box-shadow: 0 4px 14px rgba(0, 127, 255, 0.35);
 }
 
-/* Tab Views */
 .tab-content {
   display: none;
   animation: fadeIn 0.2s ease;
@@ -308,9 +298,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================================================
-   Control Bars & Filters
-   ========================================================================== */
+/* Control Bars & Filters */
 .control-bar {
   display: flex;
   flex-wrap: wrap;
@@ -336,12 +324,6 @@ body {
   padding: 9px 16px;
   flex: 1;
   min-width: 260px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.search-input-wrapper:focus-within {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.15);
 }
 
 .search-input-wrapper input {
@@ -366,9 +348,7 @@ body {
   cursor: pointer;
 }
 
-/* ==========================================================================
-   Tables & Data Presentation
-   ========================================================================== */
+/* Tables */
 .table-card {
   background: var(--surface-glass);
   backdrop-filter: blur(16px);
@@ -504,9 +484,7 @@ tr:hover td {
   border-radius: var(--radius-pill);
 }
 
-/* ==========================================================================
-   AI Assistant & Search Interface
-   ========================================================================== */
+/* Assistant */
 .assistant-wrapper {
   display: flex;
   flex-direction: column;
@@ -566,6 +544,62 @@ tr:hover td {
   line-height: 1.6;
 }
 
+/* Pagination Bar Component */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  border: var(--border-glass);
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+  box-shadow: var(--shadow-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: var(--text-main);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-size-select {
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-weight: 700;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+}
+
 /* Progress bars */
 .cat-progress {
   margin-bottom: 14px;
@@ -596,4 +630,6 @@ tr:hover td {
   .header-controls { flex-direction: column; width: 100%; }
   .header-controls .btn { width: 100%; justify-content: center; }
   .cards-grid { grid-template-columns: 1fr; }
+  .pagination-bar { flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }
+  .pagination-controls { justify-content: center; }
 }

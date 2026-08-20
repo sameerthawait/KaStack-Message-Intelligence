@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- CSS -->
-  <link rel="stylesheet" href="/static/styles.css?v=2.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=2.1" />
 </head>
 <body>
 
@@ -132,8 +132,8 @@
   <!-- TAB 3: PRIORITY ENGINE -->
   <div id="tab-priority" class="tab-content">
     <div class="control-bar">
-      <div class="search-input-wrapper">🔍 <input type="text" id="priority-search" placeholder="Search message ID, item ID, or priority reason..." oninput="loadPriority(0)" /></div>
-      <select class="select-filter" id="priority-filter" onchange="loadPriority(0)">
+      <div class="search-input-wrapper">🔍 <input type="text" id="priority-search" placeholder="Search message ID, item ID, or priority reason..." oninput="resetAndLoadPriority()" /></div>
+      <select class="select-filter" id="priority-filter" onchange="resetAndLoadPriority()">
         <option value="all">All Priorities</option>
         <option value="critical">Critical Only</option>
         <option value="high">High Only</option>
@@ -158,13 +158,14 @@
         </tbody>
       </table>
     </div>
+    <div id="priority-pagination" class="pagination-bar"></div>
   </div>
 
   <!-- TAB 4: RELATED GROUPS -->
   <div id="tab-groups" class="tab-content">
     <div class="control-bar">
-      <div class="search-input-wrapper">🔍 <input type="text" id="groups-search" placeholder="Search topic title or summary..." oninput="loadGroups(0)" /></div>
-      <select class="select-filter" id="groups-filter" onchange="loadGroups(0)">
+      <div class="search-input-wrapper">🔍 <input type="text" id="groups-search" placeholder="Search topic title or summary..." oninput="resetAndLoadGroups()" /></div>
+      <select class="select-filter" id="groups-filter" onchange="resetAndLoadGroups()">
         <option value="all">All Statuses</option>
         <option value="completed">Completed</option>
         <option value="rescheduled">Rescheduled</option>
@@ -177,13 +178,14 @@
     <div class="cards-grid" id="groups-cards-container">
       <div style="grid-column: 1/-1; text-align:center; padding:32px;">Loading related-message groups...</div>
     </div>
+    <div id="groups-pagination" class="pagination-bar"></div>
   </div>
 
   <!-- TAB 5: PRIVACY ROUTER -->
   <div id="tab-privacy" class="tab-content">
     <div class="control-bar">
-      <div class="search-input-wrapper">🔍 <input type="text" id="privacy-search" placeholder="Search target ID, sensitivity type, or reason..." oninput="loadPrivacy(0)" /></div>
-      <select class="select-filter" id="privacy-filter" onchange="loadPrivacy(0)">
+      <div class="search-input-wrapper">🔍 <input type="text" id="privacy-search" placeholder="Search target ID, sensitivity type, or reason..." oninput="resetAndLoadPrivacy()" /></div>
+      <select class="select-filter" id="privacy-filter" onchange="resetAndLoadPrivacy()">
         <option value="all">All Routing Policies</option>
         <option value="blocked">🚫 Blocked Only</option>
         <option value="confirm">⚠️ Confirm Only</option>
@@ -206,6 +208,7 @@
         </tbody>
       </table>
     </div>
+    <div id="privacy-pagination" class="pagination-bar"></div>
   </div>
 
   <!-- TAB 6: BENCHMARK TEST SET -->
@@ -231,8 +234,8 @@
   <!-- TAB 7: CLASSIFICATIONS -->
   <div id="tab-classifications" class="tab-content">
     <div class="control-bar">
-      <div class="search-input-wrapper">🔍 <input type="text" id="class-search" placeholder="Search message ID, category, or rule reason..." oninput="loadClassifications(0)" /></div>
-      <select class="select-filter" id="class-cat-filter" onchange="loadClassifications(0)">
+      <div class="search-input-wrapper">🔍 <input type="text" id="class-search" placeholder="Search message ID, category, or rule reason..." oninput="resetAndLoadClassifications()" /></div>
+      <select class="select-filter" id="class-cat-filter" onchange="resetAndLoadClassifications()">
         <option value="all">All Categories</option>
         <option value="action_required">Action Required</option>
         <option value="meeting_or_event">Meeting or Event</option>
@@ -258,13 +261,14 @@
         </tbody>
       </table>
     </div>
+    <div id="class-pagination" class="pagination-bar"></div>
   </div>
 
   <!-- TAB 8: TASKS & EVENTS -->
   <div id="tab-tasks-events" class="tab-content">
     <div class="control-bar">
-      <div class="search-input-wrapper">🔍 <input type="text" id="task-search" placeholder="Search task title or person..." oninput="loadTasksEvents(0)" /></div>
-      <select class="select-filter" id="task-type-filter" onchange="loadTasksEvents(0)">
+      <div class="search-input-wrapper">🔍 <input type="text" id="task-search" placeholder="Search task title or person..." oninput="resetAndLoadTasksEvents()" /></div>
+      <select class="select-filter" id="task-type-filter" onchange="resetAndLoadTasksEvents()">
         <option value="all">All Items (Tasks & Events)</option>
         <option value="task">Tasks Only</option>
         <option value="event">Events Only</option>
@@ -273,13 +277,14 @@
     <div class="cards-grid" id="tasks-cards-container">
       <div style="grid-column: 1/-1; text-align:center; padding: 32px;">Loading tasks & events...</div>
     </div>
+    <div id="tasks-pagination" class="pagination-bar"></div>
   </div>
 
   <!-- TAB 9: SENSITIVE DATA -->
   <div id="tab-sensitive" class="tab-content">
     <div class="control-bar">
-      <div class="search-input-wrapper">🔍 <input type="text" id="sensitive-search" placeholder="Search sensitive finding..." oninput="loadSensitive(0)" /></div>
-      <select class="select-filter" id="sensitive-risk-filter" onchange="loadSensitive(0)">
+      <div class="search-input-wrapper">🔍 <input type="text" id="sensitive-search" placeholder="Search sensitive finding..." oninput="resetAndLoadSensitive()" /></div>
+      <select class="select-filter" id="sensitive-risk-filter" onchange="resetAndLoadSensitive()">
         <option value="all">All Risk Levels</option>
         <option value="high">High Risk</option>
         <option value="medium">Medium Risk</option>
@@ -302,11 +307,12 @@
         </tbody>
       </table>
     </div>
+    <div id="sensitive-pagination" class="pagination-bar"></div>
   </div>
 
 </div>
 
 <!-- JavaScript Controller -->
-<script src="/static/app.js?v=2.0"></script>
+<script src="/static/app.js?v=2.1"></script>
 </body>
 </html>

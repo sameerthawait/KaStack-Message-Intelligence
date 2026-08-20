@@ -1,19 +1,27 @@
 /**
  * KaStack Message Intelligence Platform — Frontend Controller
- * Modular, clean async API handlers and UI view rendering.
+ * Modular, clean async API handlers with dynamic pagination and filtering.
  */
 
 let summaryData = {};
 
+// Pagination States
+let classOffset = 0, classLimit = 100;
+let priorityOffset = 0, priorityLimit = 100;
+let groupsOffset = 0, groupsLimit = 100;
+let privacyOffset = 0, privacyLimit = 100;
+let tasksOffset = 0, tasksLimit = 100;
+let sensitiveOffset = 0, sensitiveLimit = 100;
+
 async function init() {
   await fetchSummary();
   loadMandatoryDemo();
-  loadPriority(0);
-  loadGroups(0);
-  loadPrivacy(0);
-  loadClassifications(0);
-  loadTasksEvents(0);
-  loadSensitive(0);
+  loadPriority();
+  loadGroups();
+  loadPrivacy();
+  loadClassifications();
+  loadTasksEvents();
+  loadSensitive();
   askPreset('Which existing task became critical in the demo data?');
 }
 
@@ -25,6 +33,34 @@ function switchTab(tabId, btn) {
   if (target) {
     target.classList.add('active');
   }
+}
+
+function renderPagination(containerId, offset, limit, total, onChangePageFnName, onChangeLimitFnName) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const start = total === 0 ? 0 : offset + 1;
+  const end = Math.min(offset + limit, total);
+  const currentPage = Math.floor(offset / limit) + 1;
+  const totalPages = Math.ceil(total / limit) || 1;
+
+  container.innerHTML = `
+    <div>
+      Showing <b>${start}</b>–<b>${end}</b> of <b>${total}</b> records
+    </div>
+    <div class="pagination-controls">
+      <label style="font-size:12px; color:var(--text-secondary);">Show:</label>
+      <select class="page-size-select" onchange="${onChangeLimitFnName}(parseInt(this.value))">
+        <option value="100" ${limit === 100 ? 'selected' : ''}>100</option>
+        <option value="250" ${limit === 250 ? 'selected' : ''}>250</option>
+        <option value="500" ${limit === 500 ? 'selected' : ''}>500</option>
+        <option value="1000" ${limit >= 900 ? 'selected' : ''}>All (${total})</option>
+      </select>
+      <button class="page-btn" onclick="${onChangePageFnName}(${offset - limit})" ${offset === 0 ? 'disabled' : ''}>◀ Prev</button>
+      <span style="font-size:12px; font-weight:700;">Page ${currentPage} of ${totalPages}</span>
+      <button class="page-btn" onclick="${onChangePageFnName}(${offset + limit})" ${offset + limit >= total ? 'disabled' : ''}>Next ▶</button>
+    </div>
+  `;
 }
 
 async function fetchSummary() {
@@ -155,20 +191,26 @@ async function runAssistantQuery() {
   }
 }
 
-async function loadPriority(offset = 0) {
+// PRIORITY
+function resetAndLoadPriority() { priorityOffset = 0; loadPriority(); }
+function setPriorityPage(newOffset) { priorityOffset = Math.max(0, newOffset); loadPriority(); }
+function setPriorityLimit(newLimit) { priorityLimit = newLimit; priorityOffset = 0; loadPriority(); }
+
+async function loadPriority() {
   const searchInput = document.getElementById('priority-search');
   const search = searchInput ? searchInput.value : '';
   const filterInput = document.getElementById('priority-filter');
   const prio = filterInput ? filterInput.value : 'all';
 
   try {
-    const res = await fetch(`/api/l2/priority?priority=${prio}&search=${encodeURIComponent(search)}&t=${Date.now()}`);
+    const res = await fetch(`/api/l2/priority?priority=${prio}&search=${encodeURIComponent(search)}&limit=${priorityLimit}&offset=${priorityOffset}&t=${Date.now()}`);
     const json = await res.json();
     const tbody = document.getElementById('priority-table-body');
     if (!tbody) return;
 
     if (!json.data.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">No priority decisions match criteria.</td></tr>`;
+      renderPagination('priority-pagination', priorityOffset, priorityLimit, json.total || 0, 'setPriorityPage', 'setPriorityLimit');
       return;
     }
     tbody.innerHTML = json.data.map(p => `
@@ -181,25 +223,33 @@ async function loadPriority(offset = 0) {
         <td style="font-size: 12px; color: var(--text-main);">${p.reason}</td>
       </tr>
     `).join('');
+
+    renderPagination('priority-pagination', priorityOffset, priorityLimit, json.total || 0, 'setPriorityPage', 'setPriorityLimit');
   } catch (e) {
     console.error("Error loading priority decisions:", e);
   }
 }
 
-async function loadGroups(offset = 0) {
+// GROUPS
+function resetAndLoadGroups() { groupsOffset = 0; loadGroups(); }
+function setGroupsPage(newOffset) { groupsOffset = Math.max(0, newOffset); loadGroups(); }
+function setGroupsLimit(newLimit) { groupsLimit = newLimit; groupsOffset = 0; loadGroups(); }
+
+async function loadGroups() {
   const searchInput = document.getElementById('groups-search');
   const search = searchInput ? searchInput.value : '';
   const filterInput = document.getElementById('groups-filter');
   const st = filterInput ? filterInput.value : 'all';
 
   try {
-    const res = await fetch(`/api/l2/groups?status=${st}&search=${encodeURIComponent(search)}&t=${Date.now()}`);
+    const res = await fetch(`/api/l2/groups?status=${st}&search=${encodeURIComponent(search)}&limit=${groupsLimit}&offset=${groupsOffset}&t=${Date.now()}`);
     const json = await res.json();
     const container = document.getElementById('groups-cards-container');
     if (!container) return;
 
     if (!json.data.length) {
       container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 32px; color: var(--text-muted);">No related-message groups match criteria.</div>`;
+      renderPagination('groups-pagination', groupsOffset, groupsLimit, json.total || 0, 'setGroupsPage', 'setGroupsLimit');
       return;
     }
     container.innerHTML = json.data.map(g => `
@@ -219,25 +269,33 @@ async function loadGroups(offset = 0) {
         </div>
       </div>
     `).join('');
+
+    renderPagination('groups-pagination', groupsOffset, groupsLimit, json.total || 0, 'setGroupsPage', 'setGroupsLimit');
   } catch (e) {
     console.error("Error loading groups:", e);
   }
 }
 
-async function loadPrivacy(offset = 0) {
+// PRIVACY
+function resetAndLoadPrivacy() { privacyOffset = 0; loadPrivacy(); }
+function setPrivacyPage(newOffset) { privacyOffset = Math.max(0, newOffset); loadPrivacy(); }
+function setPrivacyLimit(newLimit) { privacyLimit = newLimit; privacyOffset = 0; loadPrivacy(); }
+
+async function loadPrivacy() {
   const searchInput = document.getElementById('privacy-search');
   const search = searchInput ? searchInput.value : '';
   const filterInput = document.getElementById('privacy-filter');
   const route = filterInput ? filterInput.value : 'all';
 
   try {
-    const res = await fetch(`/api/l2/privacy-routes?route=${route}&search=${encodeURIComponent(search)}&t=${Date.now()}`);
+    const res = await fetch(`/api/l2/privacy-routes?route=${route}&search=${encodeURIComponent(search)}&limit=${privacyLimit}&offset=${privacyOffset}&t=${Date.now()}`);
     const json = await res.json();
     const tbody = document.getElementById('privacy-table-body');
     if (!tbody) return;
 
     if (!json.data.length) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No privacy routing records match criteria.</td></tr>`;
+      renderPagination('privacy-pagination', privacyOffset, privacyLimit, json.total || 0, 'setPrivacyPage', 'setPrivacyLimit');
       return;
     }
     tbody.innerHTML = json.data.map(r => `
@@ -249,11 +307,14 @@ async function loadPrivacy(offset = 0) {
         <td style="font-size: 12px;">${r.reason}</td>
       </tr>
     `).join('');
+
+    renderPagination('privacy-pagination', privacyOffset, privacyLimit, json.total || 0, 'setPrivacyPage', 'setPrivacyLimit');
   } catch (e) {
     console.error("Error loading privacy routes:", e);
   }
 }
 
+// MANDATORY DEMO
 async function loadMandatoryDemo() {
   try {
     const res = await fetch('/api/mandatory-demo?t=' + Date.now());
@@ -289,17 +350,28 @@ async function loadMandatoryDemo() {
   }
 }
 
-async function loadClassifications(offset = 0) {
+// CLASSIFICATIONS
+function resetAndLoadClassifications() { classOffset = 0; loadClassifications(); }
+function setClassPage(newOffset) { classOffset = Math.max(0, newOffset); loadClassifications(); }
+function setClassLimit(newLimit) { classLimit = newLimit; classOffset = 0; loadClassifications(); }
+
+async function loadClassifications() {
   const searchInput = document.getElementById('class-search');
   const search = searchInput ? searchInput.value : '';
   const catInput = document.getElementById('class-cat-filter');
   const cat = catInput ? catInput.value : 'all';
 
   try {
-    const res = await fetch(`/api/classifications?category=${cat}&search=${encodeURIComponent(search)}&t=${Date.now()}`);
+    const res = await fetch(`/api/classifications?category=${cat}&search=${encodeURIComponent(search)}&limit=${classLimit}&offset=${classOffset}&t=${Date.now()}`);
     const json = await res.json();
     const tbody = document.getElementById('class-table-body');
     if (!tbody) return;
+
+    if (!json.data.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No classifications match criteria.</td></tr>`;
+      renderPagination('class-pagination', classOffset, classLimit, json.total || 0, 'setClassPage', 'setClassLimit');
+      return;
+    }
 
     tbody.innerHTML = json.data.map(item => `
       <tr>
@@ -310,10 +382,17 @@ async function loadClassifications(offset = 0) {
         <td style="font-size: 12px;">${item.reason}</td>
       </tr>
     `).join('');
+
+    renderPagination('class-pagination', classOffset, classLimit, json.total || 0, 'setClassPage', 'setClassLimit');
   } catch (e) {
     console.error("Error loading classifications:", e);
   }
 }
+
+// TASKS & EVENTS
+function resetAndLoadTasksEvents() { tasksOffset = 0; loadTasksEvents(); }
+function setTasksPage(newOffset) { tasksOffset = Math.max(0, newOffset); loadTasksEvents(); }
+function setTasksLimit(newLimit) { tasksLimit = newLimit; tasksOffset = 0; loadTasksEvents(); }
 
 async function loadTasksEvents() {
   const searchInput = document.getElementById('task-search');
@@ -322,10 +401,16 @@ async function loadTasksEvents() {
   const type = typeInput ? typeInput.value : 'all';
 
   try {
-    const res = await fetch(`/api/tasks-events?type=${type}&search=${encodeURIComponent(search)}&t=${Date.now()}`);
+    const res = await fetch(`/api/tasks-events?type=${type}&search=${encodeURIComponent(search)}&limit=${tasksLimit}&offset=${tasksOffset}&t=${Date.now()}`);
     const json = await res.json();
     const container = document.getElementById('tasks-cards-container');
     if (!container) return;
+
+    if (!json.data.length) {
+      container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 32px; color: var(--text-muted);">No tasks or events match criteria.</div>`;
+      renderPagination('tasks-pagination', tasksOffset, tasksLimit, json.total || 0, 'setTasksPage', 'setTasksLimit');
+      return;
+    }
 
     container.innerHTML = json.data.map(item => `
       <div class="item-card">
@@ -342,10 +427,17 @@ async function loadTasksEvents() {
         </div>
       </div>
     `).join('');
+
+    renderPagination('tasks-pagination', tasksOffset, tasksLimit, json.total || 0, 'setTasksPage', 'setTasksLimit');
   } catch (e) {
     console.error("Error loading tasks and events:", e);
   }
 }
+
+// SENSITIVE
+function resetAndLoadSensitive() { sensitiveOffset = 0; loadSensitive(); }
+function setSensitivePage(newOffset) { sensitiveOffset = Math.max(0, newOffset); loadSensitive(); }
+function setSensitiveLimit(newLimit) { sensitiveLimit = newLimit; sensitiveOffset = 0; loadSensitive(); }
 
 async function loadSensitive() {
   const searchInput = document.getElementById('sensitive-search');
@@ -354,10 +446,16 @@ async function loadSensitive() {
   const risk = riskInput ? riskInput.value : 'all';
 
   try {
-    const res = await fetch(`/api/sensitive-findings?risk=${risk}&search=${encodeURIComponent(search)}&t=${Date.now()}`);
+    const res = await fetch(`/api/sensitive-findings?risk=${risk}&search=${encodeURIComponent(search)}&limit=${sensitiveLimit}&offset=${sensitiveOffset}&t=${Date.now()}`);
     const json = await res.json();
     const tbody = document.getElementById('sensitive-table-body');
     if (!tbody) return;
+
+    if (!json.data.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No sensitive findings match criteria.</td></tr>`;
+      renderPagination('sensitive-pagination', sensitiveOffset, sensitiveLimit, json.total || 0, 'setSensitivePage', 'setSensitiveLimit');
+      return;
+    }
 
     tbody.innerHTML = json.data.map(item => `
       <tr>
@@ -368,6 +466,8 @@ async function loadSensitive() {
         <td style="font-size: 11px; font-weight: 600;">${item.recommended_action}</td>
       </tr>
     `).join('');
+
+    renderPagination('sensitive-pagination', sensitiveOffset, sensitiveLimit, json.total || 0, 'setSensitivePage', 'setSensitiveLimit');
   } catch (e) {
     console.error("Error loading sensitive findings:", e);
   }
