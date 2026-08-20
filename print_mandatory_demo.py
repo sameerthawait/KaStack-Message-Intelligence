@@ -68,7 +68,8 @@ def main():
         sf = sensitive_findings.get(mid)
 
         print(f"\n[{i:02d}] Message ID: {mid} | Sender: {raw.get('sender', 'Unknown')}")
-        print(f"     Raw Text : \"{raw.get('message', 'N/A')}\"")
+        raw_text = sf.get("masked_text") if sf else raw.get("message", "N/A")
+        print(f"     Raw Text : \"{raw_text}\"")
         print(f"     [Part 1] Category  : {c.get('category', 'N/A')} (Confidence: {c.get('confidence', 'N/A')})")
         print(f"              Matched Rule: {c.get('matched_rule', 'N/A')}")
         print(f"              Reason      : {c.get('reason', 'N/A')}")

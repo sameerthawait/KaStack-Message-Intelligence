@@ -302,6 +302,7 @@ def trigger_latest_upload_pipeline():
 
 
 
+# Known limitation: single-shared-state, no auth/user-isolation, intended for solo demo use only.
 @app.post("/api/process-csv")
 async def process_csv(file: UploadFile = File(...)):
     try:
@@ -376,6 +377,16 @@ def dashboard():
     --glass-green: #10b981;
     --text-dark: #0f172a;
     --text-muted: #64748b;
+
+    --card-bg: var(--card-glass);
+    --card-border: var(--border-glass);
+    --text-primary: var(--text-dark);
+    --text-secondary: var(--text-muted);
+    --accent-indigo: var(--glass-blue);
+    --accent-rose: #dc2626;
+    --accent-amber: #d97706;
+    --accent-emerald: #059669;
+    --clay-green: var(--glass-green);
 
     --radius-pill: 999px;
     --radius-card: 20px;
@@ -586,7 +597,11 @@ def dashboard():
 
   /* Pagination */
   .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; font-size: 12px; font-weight: 700; color: var(--text-muted); background: rgba(248, 250, 252, 0.8); }
-  .page-btns { display: flex; gap: 8px; }
+  /* Category Distribution Progress Bars */
+  .cat-progress { margin-bottom: 16px; }
+  .cat-progress-head { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-dark); }
+  .cat-progress-bar { height: 12px; background: rgba(226, 232, 240, 0.8); border-radius: var(--radius-pill); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+  .cat-progress-fill { height: 100%; border-radius: var(--radius-pill); transition: width 0.3s ease; }
 
   /* Mobile Responsiveness */
   @media (max-width: 768px) {
@@ -900,33 +915,33 @@ def dashboard():
       if (!res.ok) throw new Error('HTTP ' + res.status);
       summaryData = await res.json();
       
-      const totalMsg = summaryData.total_messages !== undefined ? summaryData.total_messages : 900;
-      document.getElementById('kpi-total').textContent = totalMsg;
-      const tasks = summaryData.tasks_extracted !== undefined ? summaryData.tasks_extracted : 230;
-      const events = summaryData.events_extracted !== undefined ? summaryData.events_extracted : 170;
+      if (!summaryData || summaryData.total_messages === undefined) {
+        document.getElementById('kpi-total').textContent = '-';
+        document.getElementById('kpi-extracted').textContent = '-';
+        document.getElementById('kpi-extracted-sub').textContent = 'No data available — run pipeline first';
+        document.getElementById('kpi-sensitive').textContent = '-';
+        document.getElementById('kpi-low-conf').textContent = 'No data available — run pipeline first';
+        document.getElementById('category-distribution-container').innerHTML = '<div style="color: var(--accent-rose); padding: 12px 0; font-weight: 600;">⚠️ No data available — run the pipeline first.</div>';
+        return;
+      }
+
+      document.getElementById('kpi-total').textContent = summaryData.total_messages;
+      const tasks = summaryData.tasks_extracted || 0;
+      const events = summaryData.events_extracted || 0;
       document.getElementById('kpi-extracted').textContent = tasks + events;
       document.getElementById('kpi-extracted-sub').textContent = `${tasks} Tasks · ${events} Events`;
-      document.getElementById('kpi-sensitive').textContent = summaryData.sensitive_findings !== undefined ? summaryData.sensitive_findings : 100;
-      document.getElementById('kpi-low-conf').textContent = `${summaryData.low_confidence_classifications !== undefined ? summaryData.low_confidence_classifications : 50} Low Confidence Flagged`;
+      document.getElementById('kpi-sensitive').textContent = summaryData.sensitive_findings !== undefined ? summaryData.sensitive_findings : 0;
+      document.getElementById('kpi-low-conf').textContent = `${summaryData.low_confidence_classifications || 0} Low Confidence Flagged`;
 
-      renderDistribution(summaryData.classification_counts || {
-        meeting_or_event: 170,
-        action_required: 230,
-        general_information: 180,
-        sensitive_information: 90,
-        personal_information: 120,
-        promotional: 110
-      });
+      renderDistribution(summaryData.classification_counts || {});
     } catch(e) {
       console.error('Error fetching summary:', e);
-      renderDistribution({
-        meeting_or_event: 170,
-        action_required: 230,
-        general_information: 180,
-        sensitive_information: 90,
-        personal_information: 120,
-        promotional: 110
-      });
+      document.getElementById('kpi-total').textContent = '-';
+      document.getElementById('kpi-extracted').textContent = '-';
+      document.getElementById('kpi-extracted-sub').textContent = 'No data available — run pipeline first';
+      document.getElementById('kpi-sensitive').textContent = '-';
+      document.getElementById('kpi-low-conf').textContent = 'No data available — run pipeline first';
+      document.getElementById('category-distribution-container').innerHTML = '<div style="color: var(--accent-rose); padding: 12px 0; font-weight: 600;">⚠️ No data available — run the pipeline first.</div>';
     }
   }
 

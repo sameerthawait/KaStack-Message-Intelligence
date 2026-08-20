@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Callable
 
 from src.models import Classification
 from src.text_utils import strip_filler_prefixes

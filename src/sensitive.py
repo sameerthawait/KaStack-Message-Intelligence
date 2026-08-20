@@ -7,35 +7,17 @@ Information". A sensitive value could in principle appear inside a
 message of any category; scanning everything is the safer default for
 a system whose stated purpose is to protect sensitive data.
 
-Each rule is: (type_name, compiled_regex, risk_level, recommended_action,
-mask_fn). mask_fn receives the regex match and returns the masked
-replacement — this lets us keep a little structural context (e.g. last
-2 digits of a card) vs full redaction, depending on what's appropriate
-for the value type.
+Detected sensitive values are fully redacted to "******" in-place while
+preserving surrounding text for context, ensuring maximum privacy protection.
 """
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Optional
 
 from src.models import SensitiveFinding
-
-
-def _full_mask(_match: re.Match) -> str:
-    return "******"
-
-
-def _keep_last_n(n: int) -> Callable[[re.Match], str]:
-    def _mask(match: re.Match) -> str:
-        value = match.group(1)
-        digits_only = re.sub(r"\D", "", value)
-        if len(digits_only) <= n:
-            return "*" * len(value)
-        visible = digits_only[-n:]
-        return "*" * (len(value) - n) + visible
-    return _mask
 
 
 @dataclass(frozen=True)

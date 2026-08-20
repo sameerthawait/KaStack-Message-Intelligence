@@ -24,7 +24,7 @@ _DATE = r"\d{4}-\d{2}-\d{2}"
 _TIME = r"\d{1,2}:\d{2}"
 
 
-def _priority_for(days_note: str = "") -> str:
+def _priority_for() -> str:
     # The dataset gives no explicit priority signal (no "urgent"/"low priority"
     # wording anywhere in the 900 messages, verified during analysis), so every
     # extracted task/event defaults to "medium" rather than inventing a signal
