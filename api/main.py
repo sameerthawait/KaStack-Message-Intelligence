@@ -509,9 +509,16 @@ async def process_csv(file: UploadFile = File(...)):
         saved_csv_path = UPLOAD_DATA_DIR / f"uploaded_{timestamp_str}.csv"
         saved_csv_path.write_bytes(raw)
 
+        # If the uploaded file is an incremental stream (e.g. l2_messages.csv MSG_0901+) and L1 base exists,
+        # merge both streams so related-message grouping tracks tasks across time (900 + 180 = 1,080).
+        uploaded_ids = {row.get("message_id", "").strip() for row in reader}
+        inputs_to_run: list[Path] | Path = saved_csv_path
+        if DATA_CSV.exists() and not uploaded_ids.issuperset({"MSG_0001", "MSG_0002"}):
+            inputs_to_run = [DATA_CSV, saved_csv_path]
+
         CUSTOM_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        summary = run_pipeline(saved_csv_path, CUSTOM_OUTPUT_DIR)
-        run_pipeline(saved_csv_path, OUTPUT_DIR)
+        summary = run_pipeline(inputs_to_run, CUSTOM_OUTPUT_DIR)
+        run_pipeline(inputs_to_run, OUTPUT_DIR)
 
         return {
             "status": "success",
