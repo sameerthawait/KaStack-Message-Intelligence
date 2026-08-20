@@ -509,12 +509,27 @@ async def process_csv(file: UploadFile = File(...)):
         saved_csv_path = UPLOAD_DATA_DIR / f"uploaded_{timestamp_str}.csv"
         saved_csv_path.write_bytes(raw)
 
-        # If the uploaded file is an incremental stream (e.g. l2_messages.csv MSG_0901+) and L1 base exists,
-        # merge both streams so related-message grouping tracks tasks across time (900 + 180 = 1,080).
+        active_base_csv = UPLOAD_DATA_DIR / "active_base_messages.csv"
         uploaded_ids = {row.get("message_id", "").strip() for row in reader}
-        inputs_to_run: list[Path] | Path = saved_csv_path
-        if DATA_CSV.exists() and not uploaded_ids.issuperset({"MSG_0001", "MSG_0002"}):
-            inputs_to_run = [DATA_CSV, saved_csv_path]
+        is_base_dataset = uploaded_ids.issuperset({"MSG_0001", "MSG_0002"}) or len(reader) >= 500
+
+        if is_base_dataset:
+            # Store uploaded base dataset (900 messages) in memory / disk for the active session
+            active_base_csv.write_bytes(raw)
+            inputs_to_run: list[Path] | Path = saved_csv_path
+        else:
+            # Incremental follow-up stream (e.g. l2_messages.csv with 180 msgs).
+            # Merge with active base dataset (900 msgs) so total becomes 1,080 messages!
+            base_file = None
+            if active_base_csv.exists():
+                base_file = active_base_csv
+            elif DATA_CSV.exists():
+                base_file = DATA_CSV
+
+            if base_file:
+                inputs_to_run = [base_file, saved_csv_path]
+            else:
+                inputs_to_run = saved_csv_path
 
         CUSTOM_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         summary = run_pipeline(inputs_to_run, CUSTOM_OUTPUT_DIR)
