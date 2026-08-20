@@ -155,7 +155,9 @@ def _ensure_output_data() -> dict:
 
     if needs_generation:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        if DATA_CSV.exists():
+        if DATA_CSV.exists() and L2_MESSAGES_CSV.exists():
+            return run_pipeline([DATA_CSV, L2_MESSAGES_CSV], OUTPUT_DIR)
+        elif DATA_CSV.exists():
             return run_pipeline(DATA_CSV, OUTPUT_DIR)
         elif L2_DEMO_MESSAGES_CSV.exists():
             return run_pipeline(L2_DEMO_MESSAGES_CSV, OUTPUT_DIR)

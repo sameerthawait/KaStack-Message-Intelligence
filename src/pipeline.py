@@ -42,32 +42,49 @@ class MessageRow:
         self.message = message
 
 
-def load_messages(csv_path: Path) -> list[MessageRow]:
+def load_messages(csv_path: Path | list[Path]) -> list[MessageRow]:
     """
-    Load and validate the dataset. Rows are sorted defensively by
-    timestamp to strictly preserve chronological execution order.
+    Load and validate the dataset(s). Rows are deduplicated and sorted
+    defensively by timestamp to strictly preserve chronological execution order.
     """
+    paths = [csv_path] if isinstance(csv_path, Path) else csv_path
     rows: list[MessageRow] = []
-    with csv_path.open(newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        required_cols = {"message_id", "timestamp", "sender", "message"}
-        if not required_cols.issubset(reader.fieldnames or []):
-            raise ValueError(
-                f"CSV missing required columns. Expected {required_cols}, "
-                f"got {reader.fieldnames}"
-            )
-        for line_no, row in enumerate(reader, start=2):
-            if not row.get("message_id") or not row.get("message"):
-                missing = [k for k in ("message_id", "message") if not row.get(k)]
-                logger.warning("Skipping malformed row at line %d: missing %s", line_no, missing)
-                continue
-            rows.append(MessageRow(row["message_id"], row["timestamp"], row["sender"], row["message"]))
+    seen_ids = set()
+
+    for p in paths:
+        if not p.exists():
+            continue
+        with p.open(newline="", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            required_cols = {"message_id", "timestamp", "sender", "message"}
+            if not required_cols.issubset(reader.fieldnames or []):
+                raise ValueError(
+                    f"CSV {p.name} missing required columns. Expected {required_cols}, "
+                    f"got {reader.fieldnames}"
+                )
+            for line_no, row in enumerate(reader, start=2):
+                mid = row.get("message_id", "").strip()
+                if not mid or not row.get("message"):
+                    logger.warning("Skipping invalid row %d in %s: %s", line_no, p.name, row)
+                    continue
+                if mid in seen_ids:
+                    continue
+                seen_ids.add(mid)
+                rows.append(
+                    MessageRow(
+                        message_id=mid,
+                        timestamp=row.get("timestamp", "").strip(),
+                        sender=row.get("sender", "unknown").strip(),
+                        message=row.get("message", "").strip(),
+                    )
+                )
 
     rows.sort(key=lambda r: r.timestamp)
+    logger.info("Loaded %d unique messages chronologically from %d file(s)", len(rows), len(paths))
     return rows
 
 
-def run_pipeline(csv_path: Path, output_dir: Path) -> dict:
+def run_pipeline(csv_path: Path | list[Path], output_dir: Path) -> dict:
     start_time = time.perf_counter()
     output_dir.mkdir(parents=True, exist_ok=True)
     rows = load_messages(csv_path)
